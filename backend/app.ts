@@ -1,4 +1,4 @@
-const express = require("express");
+import { Express } from "express";
 const { dbConnect } = require("./config/db");
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5000;
 dbConnect();
 app.use(express.json());
 
-app.get("/", (req, res) => {
+app.get("/", (req, res, next) => {
   res.send("Hello World");
 });
 

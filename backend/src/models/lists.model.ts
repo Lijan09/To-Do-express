@@ -5,14 +5,18 @@ const listSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+    required: false,
+  },
+  comments: {
+    type: String,
+    required: false,
+  },
   status: {
     type: String,
-    enum: ["dormant", "active"],
-    default: "dormant",
-  },
-  complete: {
-    type: Boolean,
-    default: false,
+    enum: ["active", "doing", "completed"],
+    default: "active",
   },
   createdAt: {
     type: Date,
@@ -24,13 +28,6 @@ const listSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-});
-
-listSchema.pre("validate", function (next) {
-  if (this.complete === true && this.status === "active") {
-    return next(new Error('A completed task cannot have status "active".'));
-  }
-  next();
 });
 
 const List = mongoose.model("List", listSchema);
