@@ -2,11 +2,7 @@ import {verifyToken} from "../utils/auth/token";
 import { Request, Response, NextFunction } from "express";
 
 
-interface AuthenticatedRequest extends Request {
-  user?: any;
-}
-
-export const protect = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+export const protect = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer "))
