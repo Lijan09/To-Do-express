@@ -1,11 +1,10 @@
 import jwt from "jsonwebtoken";
 import config from "../../config/config";
-import { IToken } from "../../interface/utils.interface";
 
 const JWT_EXPRIRATION = config.jwtExpiration;
 const JWT_SECRET = config.jwtSecret;
 
-export class Token implements IToken {
+export class Token {
   generate = (user: string) => {
     const token = jwt.sign(user, JWT_SECRET, {
       expiresIn: JWT_EXPRIRATION,

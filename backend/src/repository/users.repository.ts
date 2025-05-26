@@ -6,20 +6,16 @@ import {
   IUpdateName,
 } from "../interface/users.interface";
 import { Document } from "mongoose";
-import { IPasswordUtil } from "../interface/utils.interface";
+import { PasswordUtils } from "../utils/auth/auth";
 import { IUserRepository } from "../interface/users.repository.interface";
 
 interface IUserUpdate extends IUser, Document {}
 
+const passwordUtils = new PasswordUtils();
+
 export class UserRepository implements IUserRepository {
-  private passwordUtil: IPasswordUtil;
-
-  constructor(passwordUtil: IPasswordUtil) {
-    this.passwordUtil = passwordUtil;
-  }
-
   async createUser({ name, password, userName }: IUser) {
-    const hashedPassword = await this.passwordUtil.hashPassword(password);
+    const hashedPassword = await passwordUtils.hashPassword(password);
     const user: IUserUpdate = new User({
       name,
       userName,
@@ -46,7 +42,7 @@ export class UserRepository implements IUserRepository {
     if (!user) {
       throw new Error("User not found");
     }
-    const hashedPassword = await this.passwordUtil.hashPassword(password);
+    const hashedPassword = await passwordUtils.hashPassword(password);
     user.password = hashedPassword;
     await user.save();
   }

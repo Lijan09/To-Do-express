@@ -6,20 +6,20 @@ import {
 } from "../interface/users.interface";
 import { Response } from "express";
 import { IUserRepository } from "../interface/users.repository.interface";
-import { IPasswordUtil } from "../interface/utils.interface";
 import { IUserService } from "../interface/users.service.interface";
+import { PasswordUtils } from "../utils/auth/auth";
+
+const passwordUtils = new PasswordUtils();
 
 export class UserService implements IUserService {
   private userRepo: IUserRepository;
-  private passwordUtil: IPasswordUtil;
 
-  constructor(userRepo: IUserRepository, passwordUtil: IPasswordUtil) {
+  constructor(userRepo: IUserRepository) {
     this.userRepo = userRepo;
-    this.passwordUtil = passwordUtil;
   }
 
   async registerUser({ name, password, userName }: IUser) {
-    const hashed = await this.passwordUtil.hashPassword(password);
+    const hashed = await passwordUtils.hashPassword(password);
     await this.userRepo.createUser({ name, password: hashed, userName });
 
     return { name, userName };
@@ -29,7 +29,7 @@ export class UserService implements IUserService {
     const user = await this.userRepo.findUserByUsername({ userName });
     if (!user) throw new Error("User not found");
 
-    const isValid = await this.passwordUtil.validatePassword(
+    const isValid = await passwordUtils.validatePassword(
       password,
       user.password
     );

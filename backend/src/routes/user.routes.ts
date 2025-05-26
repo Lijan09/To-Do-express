@@ -1,5 +1,15 @@
-const express = require("express");
-const router = express.Router();
-const {protect} = require("../middleware/auth.middleware");
+import express from "express";
+import { protect } from "../middleware/auth.middleware";
+import { UserController } from "../controller/users.controller";
+import { UserService } from "../service/users.service";
+import { UserRepository } from "../repository/users.repository";
 
-router.get('/profile', protect, userController.getProfile);
+const router = express.Router();
+
+const userRepo = new UserRepository();
+const userService = new UserService(userRepo);
+const userController = new UserController(userService);
+
+router.get("/", (req, res) => {
+  res.send("Hello World!");
+});

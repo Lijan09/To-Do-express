@@ -3,15 +3,16 @@ import catchAsync from "../utils/catchAsync";
 import { IUser } from "../interface/users.interface";
 import { IUserService } from "../interface/users.service.interface";
 import { IUserController } from "../interface/users.controller.interface";
-import { IToken } from "../interface/utils.interface";
+import { Token } from "../utils/auth/token";
 
-export class UsersController implements IUserController {
+const tokenHandler = new Token();
+
+export class UserController implements IUserController {
   private userService: IUserService;
-  private Token: IToken;
 
-  constructor(userService: IUserService, Token: IToken) {
+
+  constructor(userService: IUserService) {
     this.userService = userService;
-    this.Token = Token;
   }
 
   register: ExpressHandler = catchAsync(async (req, res, next) => {
@@ -21,7 +22,7 @@ export class UsersController implements IUserController {
       password,
       userName,
     } as IUser);
-    const token = this.Token.generate(userName);
+    const token = tokenHandler.generate(userName);
     res.status(201).json({
       status: "success",
       token,
@@ -32,7 +33,7 @@ export class UsersController implements IUserController {
   login: ExpressHandler = catchAsync(async (req, res, next) => {
     const { userName, password } = req.body;
     const userData = await this.userService.loginUser({ userName, password });
-    const token = this.Token.generate(userName);
+    const token = tokenHandler.generate(userName);
     res.status(200).json({
       status: "success",
       token,
