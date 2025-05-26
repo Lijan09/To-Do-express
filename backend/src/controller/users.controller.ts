@@ -1,21 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
 import { Token } from '../utils/auth/token';
 import { ExpressHandler } from '../type/expressHandler';
 import catchAsync from '../utils/catchAsync';
-import {
-  registerUser,
-  loginUser,
-  logoutUser,
-  updatePwd,
-  getProfile,
-  updateUser,
-  deleteUsers,
-} from '../service/users.service';
+import { IUser } from '../interface/users.interface';
+import { }
+import { IPasswordUtil } from '../interface/utils.interface';
 
-export const register = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { name, password, username } = req.body;
-  const userData = await registerUser(name, password, username);
-  const token = new Token({ username }).generate();
+
+export const register: ExpressHandler = catchAsync(async (req, res, next) => {
+  const { name, password, userName } = req.body;
+  const userData = await registerUser({name, password, userName} as IUser);
+  const token = new Token({ userName }).generate();
   res.status(201).json({
     status: "success",
     token,
@@ -23,10 +17,10 @@ export const register = catchAsync(async (req: Request, res: Response, next: Nex
   });
 });
 
-export const login = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { username, password } = req.body;
-  const userData = await loginUser(username, password);
-  const token = new Token({username}).generate();
+export const login = catchAsync(async (req, res, next) => {
+  const { userName, password } = req.body;
+  const userData = await loginUser({userName, password});
+  const token = new Token({userName}).generate();
   res.status(200).json({
     status: "success",
     token,
@@ -51,7 +45,7 @@ export const updatePassword = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateName = catchAsync(async (req, res, next) => {
+export const updateName: ExpressHandler = catchAsync(async (req, res, next) => {
   const { username } = req.user;
   const { newUsername } = req.body;
   const userData = updateUser(username, newUsername);

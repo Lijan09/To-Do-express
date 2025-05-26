@@ -1,74 +1,82 @@
-import { hashPassword, validatePassword } from "../utils/auth/auth";
 import {
-  createUser,
-  findUserByUsername,
-  updatePassword,
-  updateUsername,
-  deleteUser,
-} from "../repository/users.repository";
-import {IAuth, IUpdateName, IUser, IUserName} from "../interface/users.interface";
+  IAuth,
+  IUpdateName,
+  IUser,
+  IUserName,
+} from "../interface/users.interface";
 import { Response } from "express";
+import { IUserRepository } from "../interface/users.repository.interface";
+import { IPasswordUtil } from "../interface/utils.interface";
+import { IUserService } from "../interface/users.service.interface";
 
-export const registerUser = async ({name, password, userName}: IUser) => {
-  password = await hashPassword(password);
-  createUser({name, password, userName});
-  return {
-    name,
-    userName,
-  };
-};
+export class UserService implements IUserService {
+  private userRepo: IUserRepository;
+  private passwordUtil: IPasswordUtil;
 
-export const loginUser = async ({userName, password}: IAuth) => {
-  const user = await findUserByUsername({userName});
-  if (!user) {
-    throw new Error("User not found");
+  constructor(userRepo: IUserRepository, passwordUtil: IPasswordUtil) {
+    this.userRepo = userRepo;
+    this.passwordUtil = passwordUtil;
   }
-  const isValid = await validatePassword(password, user.password);
-  if (!isValid) {
-    throw new Error("Invalid password");
+
+  async registerUser({ name, password, userName }: IUser) {
+    const hashed = await this.passwordUtil.hashPassword(password);
+    await this.userRepo.createUser({ name, password: hashed, userName });
+
+    return { name, userName };
   }
-  return {
-    userName: user.userName,
-    message: "Login successful",
+
+  async loginUser({ userName, password }: IAuth) {
+    const user = await this.userRepo.findUserByUsername({ userName });
+    if (!user) throw new Error("User not found");
+
+    const isValid = await this.passwordUtil.validatePassword(
+      password,
+      user.password
+    );
+    if (!isValid) throw new Error("Invalid password");
+
+    return {
+      userName: user.userName,
+      message: "Login successful",
+    };
   }
-};
 
-export const logoutUser = async (response: Response) => {
-  response.clearCookie("token");
-};
-
-export const updatePwd = async ({userName, password}: IAuth) => {
-  updatePassword({userName, password});
-  return {
-    userName,
-    message: "Password updated successfully",
-  };
-};
-
-export const updateUser = async ({oldName, newName}: IUpdateName) => {
-  updateUsername({oldName, newName});
-  return {
-    oldName,
-    newName,
-    message: "Username updated successfully",
-  };
-};
-
-export const getProfile = async ({userName}: IUserName) => {
-  const user = await findUserByUsername({userName});
-  if (!user) {
-    throw new Error("User not found");
+  async logoutUser(response: Response) {
+    response.clearCookie("token");
   }
-  return {
-    name: user.name,
-    username: user.userName,
-  };
-};
 
-export const deleteUsers = async ({userName}: IUserName) => {
-  deleteUser({userName});
-  return {
-    userName,
-    message: "User deleted successfully",
-  };
-};
+  async updatePwd({ userName, password }: IAuth) {
+    await this.userRepo.updatePassword({ userName, password });
+    return {
+      userName,
+      message: "Password updated successfully",
+    };
+  }
+
+  async updateUser({ oldName, newName }: IUpdateName) {
+    await this.userRepo.updateUsername({ oldName, newName });
+    return {
+      oldName,
+      newName,
+      message: "Username updated successfully",
+    };
+  }
+
+  async getProfile({ userName }: IUserName) {
+    const user = await this.userRepo.findUserByUsername({ userName });
+    if (!user) throw new Error("User not found");
+
+    return {
+      name: user.name,
+      userName: user.userName,
+    };
+  }
+
+  async deleteUsers({ userName }: IUserName) {
+    await this.userRepo.deleteUser({ userName });
+    return {
+      userName,
+      message: "User deleted successfully",
+    };
+  }
+}

@@ -1,51 +1,74 @@
-import { hashPassword } from './../utils/auth/auth';
-import User from '../models/users.model';
-import { IUser, IUserName, IAuth, IUpdateName } from '../interface/users.interface';
-import { Document } from 'mongoose';
+import User from "../models/users.model";
+import {
+  IUser,
+  IUserName,
+  IAuth,
+  IUpdateName,
+} from "../interface/users.interface";
+import { Document } from "mongoose";
+import { IPasswordUtil } from "../interface/utils.interface";
+import { IUserRepository } from "../interface/users.repository.interface";
 
 interface IUserUpdate extends IUser, Document {}
 
-export const createUser = async ({name, password, userName}: IUser) => {
-  const user = new User({
-    name,
-    password,
-    userName,
-  });
-  await user.save();
-};
+export class UserRepository implements IUserRepository {
+  private passwordUtil: IPasswordUtil;
 
-export const findUserByUsername = async ({userName}: IUserName) => {
-  const user = await User.findOne({ userName });
-  return user;
-};
-
-export const updatePassword = async ({userName, password}: IAuth) => {
-  const user = await User.findOne({ userName });
-  if (!user) {
-    throw new Error("User not found");
+  constructor(passwordUtil: IPasswordUtil) {
+    this.passwordUtil = passwordUtil;
   }
-  const hashedPassword = await hashPassword(password);
-  user.password = hashedPassword;
-  await user.save();
-};
 
-export const updateUsername = async ({oldName, newName}: IUpdateName) => {
-  const user: IUserUpdate | null = await User.findOne({ userName: oldName });
-  if (!user) {
-    throw new Error("User not found");
+  async createUser({ name, password, userName }: IUser) {
+    const hashedPassword = await this.passwordUtil.hashPassword(password);
+    const user: IUserUpdate = new User({
+      name,
+      userName,
+      password: hashedPassword,
+    });
+    await user.save();
+    return {
+      name,
+      userName,
+    };
   }
-  user.name = newName;
-  await user.save();
-};
 
-export const deleteUser = async ({userName}: IUserName) => {
-  const user: IUserUpdate | null = await User.findOne({ userName });
-  if (!user) {
-    throw new Error("User not found");
+  async findUserByUsername({ userName }: IUserName) {
+    const user = await User.findOne({ userName });
+    return {
+      userName: user?.userName || "",
+      name: user?.name || "",
+      password: user?.password || "",
+    };
   }
-  await user.deleteOne();
-  return {
-    userName: user.userName,
-    message: "User deleted successfully",
-  };
-};
+
+  async updatePassword({ userName, password }: IAuth) {
+    const user: IUserUpdate | null = await User.findOne({ userName });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const hashedPassword = await this.passwordUtil.hashPassword(password);
+    user.password = hashedPassword;
+    await user.save();
+  }
+
+  async updateUsername({ oldName, newName }: IUpdateName) {
+    const user: IUserUpdate | null = await User.findOne({ userName: oldName });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    user.name = newName;
+    await user.save();
+  }
+
+  async deleteUser({ userName }: IUserName) {
+    const user: IUserUpdate | null = await User.findOne({ userName });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    await user.deleteOne();
+    return {
+      userName: user.userName,
+      message: "User deleted successfully",
+    };
+  }
+}
