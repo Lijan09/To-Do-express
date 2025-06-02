@@ -1,5 +1,6 @@
 import {
   ICreate,
+  ICreateReturn,
   IList,
   IUpdateComment,
   IUpdateDescription,
@@ -7,7 +8,7 @@ import {
 } from "./lists.interface";
 
 export interface IListService {
-  create(data: IList): Promise<ICreate>;
+  create(data: ICreate): Promise<ICreateReturn>;
   getByTitle(title: string, user: string): Promise<IList>;
   getAll(user: string): Promise<[] | IList[]>;
   updateStatus(

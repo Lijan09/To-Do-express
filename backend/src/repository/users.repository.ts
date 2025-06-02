@@ -62,4 +62,12 @@ export class UserRepository implements IUserRepository {
       message: "User deleted successfully",
     };
   }
+
+  async getUserID(userName: string) {
+    const user = await User.findOne({ userName }).select("_id");
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user._id as string;
+  }
 }

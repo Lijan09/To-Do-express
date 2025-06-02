@@ -3,11 +3,13 @@ import { protect } from "../middleware/auth.middleware";
 import { ListController } from "../controller/lists.controller";
 import { ListService } from "../service/lists.service";
 import { ListRepository } from "../repository/lists.repository";
+import { UserRepository } from "../repository/users.repository";
 
 const router = express.Router();
 
+const userRepo = new UserRepository();
 const listRepo = new ListRepository();
-const listService = new ListService(listRepo);
+const listService = new ListService(listRepo, userRepo);
 const listController = new ListController(listService);
 
 router.use(protect as RequestHandler);

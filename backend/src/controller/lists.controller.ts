@@ -11,12 +11,12 @@ export class ListController implements IListController {
   }
 
   create: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { title, description, comments, status, user } = req.body;
+    const { title, description, comments } = req.body;
+    const user = res.locals.user;
     const listData = await this.listService.create({
       title,
       description,
       comments,
-      status,
       user,
     });
     return res.status(201).json({
@@ -26,34 +26,47 @@ export class ListController implements IListController {
   });
 
   getByTitle: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { title, user } = req.body;
+    const title = req.params.title;
+    const user = res.locals.user;
     const listData = await this.listService.getByTitle(title, user);
     return res.status(200).json({ listData, status: "success" });
   });
 
   getAll: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { user } = req.body;
+    const user = res.locals.user;
     const lists = await this.listService.getAll(user);
     return res.status(200).json({ lists, status: "success" });
   });
 
   updateStatus: ExpressHandler = catchAsync(async (req, res, next) => {
     const { title, newStatus } = req.body;
-    const message = await this.listService.updateStatus({ title, newStatus });
+    const user = res.locals.user;
+    const message = await this.listService.updateStatus({
+      title,
+      newStatus,
+      user,
+    });
     return res.status(200).json({ message });
   });
 
   updateComment: ExpressHandler = catchAsync(async (req, res, next) => {
     const { title, newComment } = req.body;
-    const message = await this.listService.updateComment({ title, newComment });
+    const user = res.locals.user;
+    const message = await this.listService.updateComment({
+      title,
+      newComment,
+      user,
+    });
     return res.status(200).json({ message });
   });
 
   updateDescription: ExpressHandler = catchAsync(async (req, res, next) => {
     const { title, newDescription } = req.body;
+    const user = res.locals.user;
     const message = await this.listService.updateDescription({
       title,
       newDescription,
+      user,
     });
     return res.status(200).json({ message });
   });

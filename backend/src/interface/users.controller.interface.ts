@@ -1,4 +1,4 @@
-import { ExpressHandler } from "../type/expressHandler";
+import { ExpressHandler } from "../types/expressHandler";
 
 export interface IUserController {
   register: ExpressHandler;

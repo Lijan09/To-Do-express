@@ -1,5 +1,6 @@
 import {
   ICreate,
+  ICreateReturn,
   IList,
   IUpdateComment,
   IUpdateDescription,
@@ -7,7 +8,7 @@ import {
 } from "./lists.interface";
 
 export interface IListRepository {
-  create(data: IList): Promise<ICreate>;
+  create(data: ICreate): Promise<ICreateReturn>;
   findAllByUser(userId: string): Promise<IList[] | []>;
   updateStatus(updateStatus: IUpdateStatus): Promise<void>;
   updateDescription(updateDescription: IUpdateDescription): Promise<void>;

@@ -13,4 +13,5 @@ export interface IUserRepository {
   deleteUser(
     userName: IUserName
   ): Promise<{ userName: string; message: string }>;
+  getUserID(userName: string): Promise<string>;
 }

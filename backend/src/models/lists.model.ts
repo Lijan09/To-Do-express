@@ -13,7 +13,6 @@ const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
   title: {
     type: String,
     required: true,
-    unique: true,
   },
   description: {
     type: String,
@@ -39,6 +38,8 @@ const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
     required: true,
   },
 });
+
+listSchema.index({ user: 1, title: 1 }, { unique: true });
 
 const List = mongoose.model<IListSchema>("List", listSchema);
 
