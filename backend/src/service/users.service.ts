@@ -19,16 +19,15 @@ export class UserService implements IUserService {
   }
 
   async registerUser({ name, password, userName }: IUser) {
-    const hashed = await passwordUtils.hashPassword(password);
-    await this.userRepo.createUser({ name, password: hashed, userName });
-
+    await this.userRepo.createUser({ name, password, userName });
     return { name, userName };
   }
 
   async loginUser({ userName, password }: IAuth) {
     const user = await this.userRepo.findUserByUsername({ userName });
+    console.log(user);
     if (!user) throw new Error("User not found");
-
+    console.log(password);
     const isValid = await passwordUtils.validatePassword(
       password,
       user.password
@@ -41,10 +40,6 @@ export class UserService implements IUserService {
     };
   }
 
-  async logoutUser(response: Response) {
-    response.clearCookie("token");
-  }
-
   async updatePwd({ userName, password }: IAuth) {
     await this.userRepo.updatePassword({ userName, password });
     return {
@@ -53,8 +48,8 @@ export class UserService implements IUserService {
     };
   }
 
-  async updateUser({ oldName, newName }: IUpdateName) {
-    await this.userRepo.updateUsername({ oldName, newName });
+  async updateName({ oldName, newName }: IUpdateName) {
+    await this.userRepo.updateName({ oldName, newName });
     return {
       oldName,
       newName,

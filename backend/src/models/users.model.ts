@@ -1,11 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import bcrypt from 'bcrypt';
+import mongoose, { Schema, Document } from "mongoose";
+import bcrypt from "bcrypt";
+import { PasswordUtils } from "../utils/auth/auth";
+
+const passwordUtils = new PasswordUtils();
 
 export interface IUserSchema extends Document {
   name: string;
   password: string;
   userName: string;
-  role: 'admin' | 'user';
+  role: "admin" | "user";
 }
 
 const userSchema: Schema<IUserSchema> = new Schema<IUserSchema>({
@@ -29,19 +32,17 @@ const userSchema: Schema<IUserSchema> = new Schema<IUserSchema>({
   },
   role: {
     type: String,
-    enum: ['admin', 'user'],
-    default: 'user',
+    enum: ["admin", "user"],
+    default: "user",
   },
 });
 
-userSchema.pre<IUserSchema>('save', async function () {
-  if (!this.isModified('password')) return;
+userSchema.pre<IUserSchema>("save", async function () {
+  if (!this.isModified("password")) return;
 
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await passwordUtils.hashPassword(this.password);
 });
 
-
-const User = mongoose.model<IUserSchema>('User', userSchema);
+const User = mongoose.model<IUserSchema>("User", userSchema);
 
 export default User;

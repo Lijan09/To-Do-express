@@ -1,4 +1,4 @@
-import { ExpressHandler } from "../type/expressHandler";
+import { ExpressHandler } from "../types/expressHandler";
 import catchAsync from "../utils/catchAsync";
 import { IUser } from "../interface/users.interface";
 import { IUserService } from "../interface/users.service.interface";
@@ -9,7 +9,6 @@ const tokenHandler = new Token();
 
 export class UserController implements IUserController {
   private userService: IUserService;
-
 
   constructor(userService: IUserService) {
     this.userService = userService;
@@ -23,7 +22,7 @@ export class UserController implements IUserController {
       userName,
     } as IUser);
     const token = tokenHandler.generate(userName);
-    res.status(201).json({
+    return res.status(201).json({
       status: "success",
       token,
       data: { userData },
@@ -34,7 +33,7 @@ export class UserController implements IUserController {
     const { userName, password } = req.body;
     const userData = await this.userService.loginUser({ userName, password });
     const token = tokenHandler.generate(userName);
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       token,
       data: { userData },
@@ -42,8 +41,8 @@ export class UserController implements IUserController {
   });
 
   logout: ExpressHandler = catchAsync(async (req, res, next) => {
-    await this.userService.logoutUser(res);
-    res.status(200).json({
+    res.clearCookie("token");
+    return res.status(200).json({
       status: "success",
       message: "User logged out successfully",
     });
@@ -52,7 +51,7 @@ export class UserController implements IUserController {
   updatePassword: ExpressHandler = catchAsync(async (req, res, next) => {
     const { userName, password } = req.body;
     const userData = await this.userService.updatePwd({ userName, password });
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       data: { userData },
     });
@@ -60,8 +59,8 @@ export class UserController implements IUserController {
 
   updateName: ExpressHandler = catchAsync(async (req, res, next) => {
     const { oldName, newName } = req.body;
-    const userData = await this.userService.updateUser({ oldName, newName });
-    res.status(200).json({
+    const userData = await this.userService.updateName({ oldName, newName });
+    return res.status(200).json({
       status: "success",
       data: { userData },
     });
@@ -70,7 +69,7 @@ export class UserController implements IUserController {
   getProfile: ExpressHandler = catchAsync(async (req, res, next) => {
     const { userName } = req.body;
     const userData = await this.userService.getProfile({ userName });
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       data: { userData },
     });
@@ -79,9 +78,9 @@ export class UserController implements IUserController {
   deleteUser: ExpressHandler = catchAsync(async (req, res, next) => {
     const { userName } = req.body;
     const userData = await this.userService.deleteUsers({ userName });
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
-      data: { userData },
+      data: `User ${userData.userName} deleted successfully`,
     });
   });
 }

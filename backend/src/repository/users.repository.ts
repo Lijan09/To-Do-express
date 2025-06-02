@@ -1,25 +1,18 @@
-import User from "../models/users.model";
+import User, { IUserSchema } from "../models/users.model";
 import {
   IUser,
   IUserName,
   IAuth,
   IUpdateName,
 } from "../interface/users.interface";
-import { Document } from "mongoose";
-import { PasswordUtils } from "../utils/auth/auth";
 import { IUserRepository } from "../interface/users.repository.interface";
-
-interface IUserUpdate extends IUser, Document {}
-
-const passwordUtils = new PasswordUtils();
 
 export class UserRepository implements IUserRepository {
   async createUser({ name, password, userName }: IUser) {
-    const hashedPassword = await passwordUtils.hashPassword(password);
-    const user: IUserUpdate = new User({
+    const user: IUserSchema = new User({
       name,
       userName,
-      password: hashedPassword,
+      password,
     });
     await user.save();
     return {
@@ -29,26 +22,28 @@ export class UserRepository implements IUserRepository {
   }
 
   async findUserByUsername({ userName }: IUserName) {
-    const user = await User.findOne({ userName });
+    const user = await User.findOne({ userName }).select("+password");
+    if (!user) {
+      throw new Error("User not found");
+    }
     return {
-      userName: user?.userName || "",
-      name: user?.name || "",
-      password: user?.password || "",
+      userName: user.userName,
+      name: user.name,
+      password: user.password,
     };
   }
 
   async updatePassword({ userName, password }: IAuth) {
-    const user: IUserUpdate | null = await User.findOne({ userName });
+    const user: IUserSchema | null = await User.findOne({ userName });
     if (!user) {
       throw new Error("User not found");
     }
-    const hashedPassword = await passwordUtils.hashPassword(password);
-    user.password = hashedPassword;
+    user.password = password;
     await user.save();
   }
 
-  async updateUsername({ oldName, newName }: IUpdateName) {
-    const user: IUserUpdate | null = await User.findOne({ userName: oldName });
+  async updateName({ oldName, newName }: IUpdateName) {
+    const user: IUserSchema | null = await User.findOne({ userName: oldName });
     if (!user) {
       throw new Error("User not found");
     }
@@ -57,7 +52,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async deleteUser({ userName }: IUserName) {
-    const user: IUserUpdate | null = await User.findOne({ userName });
+    const user: IUserSchema | null = await User.findOne({ userName });
     if (!user) {
       throw new Error("User not found");
     }

@@ -1,15 +1,30 @@
-import { Express } from "express";
-const { dbConnect } = require("./config/db");
-const app = express();
-const PORT = process.env.PORT || 5000;
+import express from "express";
+import dotenv from "dotenv";
+import { dbConnect } from "./src/config/db";
+import userRoutes from "./src/routes/users.routes";
+import listRoutes from "./src/routes/lists.routes";
+import config from "./src/config/config";
 
+dotenv.config();
+
+const app = express();
+const PORT = config.port;
+
+// Connect to DB
 dbConnect();
+
 app.use(express.json());
 
-app.get("/", (req, res, next) => {
-  res.send("Hello World");
+// Routes
+app.use("/api/users", userRoutes);
+app.use("/api", listRoutes); // routes like /api/user/lists etc.
+
+// Check
+app.get("/", (_, res) => {
+  res.send("Server is running");
 });
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

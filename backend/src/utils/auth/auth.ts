@@ -7,10 +7,7 @@ export class PasswordUtils {
     return hashedPassword;
   };
 
-  validatePassword = async (
-    password: string,
-    hashedPassword: string
-  ) => {
+  validatePassword = async (password: string, hashedPassword: string) => {
     const isValid = await bcrypt.compare(password, hashedPassword);
     return isValid;
   };

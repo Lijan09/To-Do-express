@@ -1,9 +1,19 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema, Document } from "mongoose";
 
-const listSchema = new mongoose.Schema({
+export interface IListSchema extends Document {
+  title: string;
+  description?: string;
+  comments?: string;
+  status: "active" | "doing" | "completed";
+  createdAt: Date;
+  user: mongoose.Types.ObjectId;
+}
+
+const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
   title: {
     type: String,
     required: true,
+    unique: true,
   },
   description: {
     type: String,
@@ -21,7 +31,7 @@ const listSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    mutable: false,
+    immutable: true,
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -30,6 +40,6 @@ const listSchema = new mongoose.Schema({
   },
 });
 
-const List = mongoose.model("List", listSchema);
+const List = mongoose.model<IListSchema>("List", listSchema);
 
-module.exports = List;
+export default List;

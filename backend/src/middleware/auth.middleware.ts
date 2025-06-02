@@ -1,8 +1,10 @@
-import {verifyToken} from "../utils/auth/token";
-import { Request, Response, NextFunction } from "express";
+import { ExpressHandler } from "./../types/expressHandler";
+import { Token } from "../utils/auth/token";
+import { JwtPayload } from "jsonwebtoken";
 
+const tokenHandler = new Token();
 
-export const protect = (req: Request, res: Response, next: NextFunction): void => {
+export const protect: ExpressHandler = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer "))
@@ -11,8 +13,12 @@ export const protect = (req: Request, res: Response, next: NextFunction): void =
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = verifyToken(token);
-    req.user = decoded;
+    const decoded = tokenHandler.verifyToken(token) as JwtPayload;
+
+    if (!decoded) {
+      return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });

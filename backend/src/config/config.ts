@@ -1,19 +1,19 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 dotenv.config();
 
 interface Config {
-    port: number;
-    dbURL: string;
-    jwtSecret: string;
-    jwtExpiration: any
+  port: number;
+  dbURI: string;
+  jwtSecret: string;
+  jwtExpiration: number;
 }
 
 const config: Config = {
-    port: Number(process.env.PORT),
-    dbURL: String(process.env.MONGOURI),
-    jwtSecret: String(process.env.JWT_SECRET),
-    jwtExpiration: process.env.JWT_EXPIRATION
-}
+  port: Number(process.env.PORT),
+  dbURI: String(process.env.MONGODB_URI),
+  jwtSecret: String(process.env.JWT_SECRET),
+  jwtExpiration: Number(process.env.JWT_EXPIRATION),
+};
 
 export default config;
