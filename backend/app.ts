@@ -16,8 +16,8 @@ dbConnect();
 app.use(express.json());
 
 // Routes
-app.use("/api/users", userRoutes);
-app.use("/api", listRoutes); // routes like /api/user/lists etc.
+app.use("/api/user", userRoutes);
+app.use("/api/list", listRoutes); // routes like /api/user/lists etc.
 
 // Check
 app.get("/", (_, res) => {

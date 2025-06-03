@@ -1,7 +1,6 @@
-import { IListService } from "../interface/lists.service.interface";
 import catchAsync from "../utils/catchAsync";
 import { ExpressHandler } from "../types/expressHandler";
-import { IListController } from "../interface/lists.controller.interface";
+import { IListService, IListController } from "../interface/lists.interface";
 
 export class ListController implements IListController {
   private listService: IListService;
@@ -11,13 +10,13 @@ export class ListController implements IListController {
   }
 
   create: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { title, description, comments } = req.body;
+    const bodyData = req.body;
     const user = res.locals.user;
     const listData = await this.listService.create({
-      title,
-      description,
-      comments,
-      user,
+      title: bodyData.title,
+      description: bodyData.description,
+      comments: bodyData.comments,
+      userID: user,
     });
     return res.status(201).json({
       data: { listData },
@@ -28,47 +27,33 @@ export class ListController implements IListController {
   getByTitle: ExpressHandler = catchAsync(async (req, res, next) => {
     const title = req.params.title;
     const user = res.locals.user;
-    const listData = await this.listService.getByTitle(title, user);
+    const listData = await this.listService.getByTitle({
+      title: title,
+      userID: user,
+    });
     return res.status(200).json({ listData, status: "success" });
   });
 
   getAll: ExpressHandler = catchAsync(async (req, res, next) => {
     const user = res.locals.user;
-    const lists = await this.listService.getAll(user);
+    const lists = await this.listService.getAll({ userID: user });
     return res.status(200).json({ lists, status: "success" });
   });
 
-  updateStatus: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { title, newStatus } = req.body;
+  updateList: ExpressHandler = catchAsync(async (req, res, next) => {
+    const bodyData = req.body;
     const user = res.locals.user;
-    const message = await this.listService.updateStatus({
-      title,
-      newStatus,
-      user,
+    const updatedList = await this.listService.updateList({
+      title: bodyData.title,
+      description: bodyData.description,
+      comments: bodyData.comments,
+      status: bodyData.status,
+      userID: user,
     });
-    return res.status(200).json({ message });
-  });
-
-  updateComment: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { title, newComment } = req.body;
-    const user = res.locals.user;
-    const message = await this.listService.updateComment({
-      title,
-      newComment,
-      user,
+    return res.status(200).json({
+      data: { updatedList },
+      message: "List updated successfully",
     });
-    return res.status(200).json({ message });
-  });
-
-  updateDescription: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { title, newDescription } = req.body;
-    const user = res.locals.user;
-    const message = await this.listService.updateDescription({
-      title,
-      newDescription,
-      user,
-    });
-    return res.status(200).json({ message });
   });
 
   delete: ExpressHandler = catchAsync(async (req, res, next) => {

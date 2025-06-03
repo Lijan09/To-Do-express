@@ -1,12 +1,9 @@
 import {
-  IAuth,
-  IUpdateName,
+  IUpdate,
   IUser,
-  IUserName,
+  IUserService,
+  IUserRepository,
 } from "../interface/users.interface";
-import { Response } from "express";
-import { IUserRepository } from "../interface/users.repository.interface";
-import { IUserService } from "../interface/users.service.interface";
 import { PasswordUtils } from "../utils/auth/auth";
 
 const passwordUtils = new PasswordUtils();
@@ -18,20 +15,31 @@ export class UserService implements IUserService {
     this.userRepo = userRepo;
   }
 
-  async registerUser({ name, password, userName }: IUser) {
-    await this.userRepo.createUser({ name, password, userName });
-    return { name, userName };
+  async registerUser(userData: IUser) {
+    const user = await this.userRepo.createUser(userData);
+    if (!user) throw new Error("User registration failed");
+    return {
+      name: user.name,
+      userName: user.userName,
+      message: "User registered successfully",
+    };
   }
 
-  async loginUser({ userName, password }: IAuth) {
-    const user = await this.userRepo.findUserByUsername({ userName });
-    console.log(user);
+  async loginUser(authData: Partial<IUser>) {
+    const user = (await this.userRepo.getUserData(
+      { userName: authData.userName },
+      "userName"
+    )) as IUser | null;
     if (!user) throw new Error("User not found");
-    console.log(password);
+    const hashedPassword = (await this.userRepo.getUserData(
+      { userName: authData.userName },
+      "password"
+    )) as string;
     const isValid = await passwordUtils.validatePassword(
-      password,
-      user.password
+      authData.password as string,
+      hashedPassword
     );
+
     if (!isValid) throw new Error("Invalid password");
 
     return {
@@ -40,25 +48,31 @@ export class UserService implements IUserService {
     };
   }
 
-  async updatePwd({ userName, password }: IAuth) {
-    await this.userRepo.updatePassword({ userName, password });
+  async updateUser(updateData: IUpdate) {
+    const hashedPassword = (await this.userRepo.getUserData(
+      { userName: updateData.userName },
+      "password"
+    )) as string;
+    const isValid = await passwordUtils.validatePassword(
+      updateData.confirmPassword,
+      hashedPassword
+    );
+    if (!isValid) throw new Error("Invalid password");
+    const user = await this.userRepo.updateUser(updateData);
+    if (!user) throw new Error("User update failed");
     return {
-      userName,
-      message: "Password updated successfully",
+      userName: user.userName,
+      name: user.name,
+      message: "User updated successfully",
     };
   }
 
-  async updateName({ oldName, newName }: IUpdateName) {
-    await this.userRepo.updateName({ oldName, newName });
-    return {
-      oldName,
-      newName,
-      message: "Username updated successfully",
-    };
-  }
+  async getProfile(userData: IUser) {
+    const user = (await this.userRepo.getUserData(
+      { userName: userData.userName },
+      "userName"
+    )) as IUser | null;
 
-  async getProfile({ userName }: IUserName) {
-    const user = await this.userRepo.findUserByUsername({ userName });
     if (!user) throw new Error("User not found");
 
     return {
@@ -67,7 +81,7 @@ export class UserService implements IUserService {
     };
   }
 
-  async deleteUsers({ userName }: IUserName) {
+  async deleteUsers({ userName }: Partial<IUser>) {
     await this.userRepo.deleteUser({ userName });
     return {
       userName,

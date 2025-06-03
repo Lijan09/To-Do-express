@@ -6,7 +6,7 @@ export interface IListSchema extends Document {
   comments?: string;
   status: "active" | "doing" | "completed";
   createdAt: Date;
-  user: mongoose.Types.ObjectId;
+  userID: mongoose.Types.ObjectId;
 }
 
 const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
@@ -32,7 +32,7 @@ const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
     default: Date.now,
     immutable: true,
   },
-  user: {
+  userID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,

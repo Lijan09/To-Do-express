@@ -1,8 +1,10 @@
 import { ExpressHandler } from "../types/expressHandler";
 import catchAsync from "../utils/catchAsync";
-import { IUser } from "../interface/users.interface";
-import { IUserService } from "../interface/users.service.interface";
-import { IUserController } from "../interface/users.controller.interface";
+import {
+  IUser,
+  IUserController,
+  IUserService,
+} from "../interface/users.interface";
 import { Token } from "../utils/auth/token";
 
 const tokenHandler = new Token();
@@ -15,13 +17,13 @@ export class UserController implements IUserController {
   }
 
   register: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { name, password, userName } = req.body;
+    const bodyData = req.body;
     const userData = await this.userService.registerUser({
-      name,
-      password,
-      userName,
+      name: bodyData.name,
+      password: bodyData.password,
+      userName: bodyData.userName,
     } as IUser);
-    const token = tokenHandler.generate(userName);
+    const token = tokenHandler.generate(bodyData.userName);
     return res.status(201).json({
       status: "success",
       token,
@@ -30,9 +32,12 @@ export class UserController implements IUserController {
   });
 
   login: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { userName, password } = req.body;
-    const userData = await this.userService.loginUser({ userName, password });
-    const token = tokenHandler.generate(userName);
+    const bodyData = req.body;
+    const userData = (await this.userService.loginUser({
+      userName: bodyData.userName,
+      password: bodyData.password,
+    })) as Partial<IUser>;
+    const token = tokenHandler.generate(bodyData.userName);
     return res.status(200).json({
       status: "success",
       token,
@@ -48,18 +53,15 @@ export class UserController implements IUserController {
     });
   });
 
-  updatePassword: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { userName, password } = req.body;
-    const userData = await this.userService.updatePwd({ userName, password });
-    return res.status(200).json({
-      status: "success",
-      data: { userData },
+  updateUser: ExpressHandler = catchAsync(async (req, res, next) => {
+    const bodyData = req.body;
+    const userName = req.params.user;
+    const userData = await this.userService.updateUser({
+      userName: userName,
+      password: bodyData.password,
+      name: bodyData.name,
+      confirmPassword: bodyData.confirmPassword,
     });
-  });
-
-  updateName: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { oldName, newName } = req.body;
-    const userData = await this.userService.updateName({ oldName, newName });
     return res.status(200).json({
       status: "success",
       data: { userData },
@@ -67,7 +69,7 @@ export class UserController implements IUserController {
   });
 
   getProfile: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { userName } = req.body;
+    const userName = req.params.user;
     const userData = await this.userService.getProfile({ userName });
     return res.status(200).json({
       status: "success",
@@ -76,11 +78,11 @@ export class UserController implements IUserController {
   });
 
   deleteUser: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { userName } = req.body;
+    const userName = req.params.user;
     const userData = await this.userService.deleteUsers({ userName });
     return res.status(200).json({
       status: "success",
-      data: `User ${userData.userName} deleted successfully`,
+      data: `User ${userName} deleted successfully`,
     });
   });
 }

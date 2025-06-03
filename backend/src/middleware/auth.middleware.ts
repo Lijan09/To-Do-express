@@ -25,3 +25,14 @@ export const protect: ExpressHandler = (req, res, next) => {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
+
+export const allowSelfOnly: ExpressHandler = (req, res, next) => {
+  const userID = res.locals.user;
+  const userName = req.params.user;
+  if (userID !== userName) {
+    return res
+      .status(403)
+      .json({ message: "Forbidden: You can only access your own profile" });
+  }
+  next();
+};

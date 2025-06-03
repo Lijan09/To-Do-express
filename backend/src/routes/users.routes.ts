@@ -1,5 +1,5 @@
 import express, { RequestHandler } from "express";
-import { protect } from "../middleware/auth.middleware";
+import { protect, allowSelfOnly } from "../middleware/auth.middleware";
 import { UserController } from "../controller/users.controller";
 import { UserService } from "../service/users.service";
 import { UserRepository } from "../repository/users.repository";
@@ -16,9 +16,14 @@ router.post("/login", userController.login as RequestHandler);
 router.use(protect as RequestHandler);
 
 router.post("/logout", userController.logout as RequestHandler);
-router.put("/password", userController.updatePassword as RequestHandler);
-router.put("/profile", userController.updateName as RequestHandler);
-router.get("/profile", userController.getProfile as RequestHandler);
-router.delete("/profile", userController.deleteUser as RequestHandler);
+
+router.use(allowSelfOnly as RequestHandler);
+
+router.put("/update/:user", userController.updateUser as RequestHandler);
+router.get("/:user", userController.getProfile as RequestHandler);
+router.delete(
+  "/delete/:user",
+  userController.deleteUser as RequestHandler
+);
 
 export default router;

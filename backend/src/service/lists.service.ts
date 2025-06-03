@@ -1,13 +1,9 @@
 import {
-  ICreate,
   IList,
-  IUpdateComment,
-  IUpdateDescription,
-  IUpdateStatus,
+  IListRepository,
+  IListService,
 } from "../interface/lists.interface";
-import { IListRepository } from "../interface/lists.repository.interface";
-import { IListService } from "../interface/lists.service.interface";
-import { IUserRepository } from "../interface/users.repository.interface";
+import { IUserRepository } from "../interface/users.interface";
 
 export class ListService implements IListService {
   private listRepo: IListRepository;
@@ -18,21 +14,35 @@ export class ListService implements IListService {
     this.listRepo = listRepo;
   }
 
-  async create(data: ICreate) {
-    const userID = await this.userRepo.getUserID(data.user);
-    return await this.listRepo.create({
+  async create(data: Partial<IList>) {
+    const userID = await this.userRepo.getUserData(
+      { userName: data.userID },
+      "id"
+    );
+    const response = await this.listRepo.create({
       title: data.title,
-      user: userID,
+      userID: userID as string,
       description: data.description,
       comments: data.comments,
     });
+    return {
+      title: response.title,
+      description: response.description,
+      comments: response.comments,
+      status: response.status,
+      message: "List created successfully",
+    };
   }
 
-  async getByTitle(title: string, user: string) {
-    const userID = await this.userRepo.getUserID(user);
-    const lists = await this.listRepo.findAllByUser(userID);
+  async getByTitle(listData: Partial<IList>) {
+    const userID = await this.userRepo.getUserData(
+      { userName: listData.userID },
+      "id"
+    );
+    listData.userID = userID as string;
+    const lists = await this.listRepo.findAllByUser(listData);
     const list = lists.find(
-      (list) => list.title.toLowerCase() === title.toLowerCase()
+      (list) => list.title.toLowerCase() === listData.title!.toLowerCase()
     );
     if (!list) {
       throw new Error("No List matching Title");
@@ -40,43 +50,26 @@ export class ListService implements IListService {
     return list;
   }
 
-  async getAll(user: string) {
-    const userID = await this.userRepo.getUserID(user);
-    return this.listRepo.findAllByUser(userID);
+  async getAll(listData: Partial<IList>) {
+    const userID = await this.userRepo.getUserData(
+      { userName: listData.userID },
+      "id"
+    );
+    listData.userID = userID as string;
+    return this.listRepo.findAllByUser(listData);
   }
 
-  async updateStatus({ title, newStatus, user }: IUpdateStatus) {
-    const userID = await this.userRepo.getUserID(user);
-    await this.listRepo.updateStatus({ title, newStatus, user: userID });
-    return {
-      title,
-      message: `Status updated to ${newStatus}`,
-    };
+  async updateList(updateData: IList) {
+    const userID = await this.userRepo.getUserData(
+      { userName: updateData.userID },
+      "id"
+    );
+    updateData.userID = userID as string;
+    const list = await this.listRepo.updateList(updateData);
+    return list;
   }
 
-  async updateDescription({ title, newDescription, user }: IUpdateDescription) {
-    const userID = await this.userRepo.getUserID(user);
-    await this.listRepo.updateDescription({
-      title,
-      newDescription,
-      user: userID,
-    });
-    return {
-      title,
-      message: `Description updated to ${newDescription}`,
-    };
-  }
-
-  async updateComment({ title, newComment, user }: IUpdateComment) {
-    const userID = await this.userRepo.getUserID(user);
-    await this.listRepo.updateComment({ title, newComment, user: userID });
-    return {
-      title,
-      message: `Comment updated to ${newComment}`,
-    };
-  }
-
-  async delete(title: string) {
-    return this.listRepo.delete(title);
+  async delete(deleteData: Partial<IList>) {
+    return this.listRepo.delete(deleteData);
   }
 }

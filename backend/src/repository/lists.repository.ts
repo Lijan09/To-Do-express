@@ -1,18 +1,11 @@
-import List, { IListSchema } from "../models/lists.model";
-import { IListRepository } from "../interface/lists.repository.interface";
-import {
-  ICreate,
-  IList,
-  IUpdateComment,
-  IUpdateDescription,
-  IUpdateStatus,
-} from "../interface/lists.interface";
+import List from "../models/lists.model";
+import { IList, IListRepository } from "../interface/lists.interface";
 
 export class ListRepository implements IListRepository {
-  async create(data: ICreate) {
+  async create(data: Partial<IList>) {
     const newList = new List({
       title: data.title,
-      user: data.user,
+      userID: data.userID,
       description: data.description,
       comments: data.comments,
     });
@@ -21,58 +14,61 @@ export class ListRepository implements IListRepository {
       title: newList.title,
       description: newList.description,
       comments: newList.comments,
+      status: newList.status,
     };
   }
 
-  async findAllByUser(user: string) {
-    const lists = await List.find({ user: user })
-      .select("title description comments status createdAt -_id")
-      .lean();
+  async findAllByUser(listData: Partial<IList>) {
+    const lists = await List.find({ userID: listData.userID }).lean();
     if (!lists) {
       throw new Error("Lists not found");
     }
-    return lists;
+    return lists.map((list: any) => ({
+      title: list.title,
+      description: list.description,
+      comments: list.comments,
+      status: list.status,
+      createdAt: list.createdAt,
+      userID: list.userID?.toString?.() ?? list.userID,
+    }));
   }
 
-  async updateStatus({ title, newStatus, user }: IUpdateStatus) {
+  async updateList(updateData: Partial<IList>) {
     const list = await List.findOne({
-      title: title,
-      user: user,
+      title: updateData.title,
+      userID: updateData.userID,
     });
     if (!list) {
       throw new Error("List not found");
     }
-    list.status = newStatus;
-    await list.save();
-  }
-
-  async updateDescription({ title, newDescription, user }: IUpdateDescription) {
-    const list = await List.findOne({ title: title, user: user });
-    if (!list) {
-      throw new Error("List not found");
+    if (updateData.description) {
+      list.description = updateData.description;
     }
-    list.description = newDescription;
-    await list.save();
-  }
-
-  async updateComment({ title, newComment, user }: IUpdateComment) {
-    const list = await List.findOne({ title: title, user: user });
-    if (!list) {
-      throw new Error("List not found");
+    if (updateData.comments) {
+      list.comments = updateData.comments;
     }
-    list.comments = newComment;
+    if (updateData.status) {
+      list.status = updateData.status;
+    }
     await list.save();
+    return {
+      title: list.title,
+      description: list.description,
+      comments: list.comments,
+      status: list.status,
+    };
   }
 
-  async delete(title: string) {
-    const list = await List.findOne({ title });
+  async delete(deleteData: Partial<IList>) {
+    const list = await List.findOne({
+      title: deleteData.title,
+    });
     if (!list) {
       throw new Error("List not found");
     }
     await list.deleteOne();
     return {
       title: list.title,
-      message: "List deleted successfully",
     };
   }
 }

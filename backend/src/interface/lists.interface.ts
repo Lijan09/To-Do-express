@@ -1,40 +1,32 @@
-import { Types } from "mongoose";
+import { ExpressHandler } from "../types/expressHandler";
 
 export interface IList {
   title: string;
   description?: string;
   comments?: string;
   status: "active" | "doing" | "completed";
-  user: Types.ObjectId;
+  userID: string;
 }
 
-export interface IUpdateStatus {
-  title: string;
-  newStatus: "active" | "doing" | "completed";
-  user: string;
+export interface IListRepository {
+  create(data: Partial<IList>): Promise<Partial<IList>>;
+  findAllByUser(listData: Partial<IList>): Promise<IList[] | []>;
+  updateList(updateData: IList): Promise<Partial<IList>>;
+  delete(deleteData: Partial<IList>): Promise<Partial<IList>>;
 }
 
-export interface IUpdateDescription {
-  title: string;
-  newDescription: string;
-  user: string;
+export interface IListService {
+  create(data: Partial<IList>): Promise<Partial<IList>>;
+  getByTitle(listData: Partial<IList>): Promise<IList>;
+  getAll(listData: Partial<IList>): Promise<[] | IList[]>;
+  updateList(updateData: IList): Promise<Partial<IList>>;
+  delete(deleteData: Partial<IList>): Promise<Partial<IList>>;
 }
 
-export interface IUpdateComment {
-  title: string;
-  newComment: string;
-  user: string;
-}
-
-export interface ICreate {
-  title: string;
-  description?: string;
-  comments?: string;
-  user: string;
-}
-
-export interface ICreateReturn {
-  title: string;
-  description?: string;
-  comments?: string;
+export interface IListController {
+  create: ExpressHandler;
+  getByTitle: ExpressHandler;
+  getAll: ExpressHandler;
+  updateList: ExpressHandler;
+  delete: ExpressHandler;
 }
