@@ -1,7 +1,13 @@
- class GlobalError extends Error {
-    constructor(message: string, error: any) {
-        super(message);
-        this.name = 'GlobalError';
-        this.stack = error.stack;
-    }
- }
+import { Request, Response, NextFunction } from "express";
+
+
+
+export const errorHandler = (
+  err: any,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || "error";
+};
