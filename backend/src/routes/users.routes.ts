@@ -10,19 +10,21 @@ const userRepo = new UserRepository();
 const userService = new UserService(userRepo);
 const userController = new UserController(userService);
 
-router.post("/register", userController.register as RequestHandler);
-router.post("/login", userController.login as RequestHandler);
-
-router.use(protect as RequestHandler);
-
 router.post("/logout", userController.logout as RequestHandler);
 
-router.use(allowSelfOnly as RequestHandler);
-
-router.put("/update/:user", userController.updateUser as RequestHandler);
-router.get("/:user", userController.getProfile as RequestHandler);
+router.put(
+  "/update/:user",
+  allowSelfOnly as RequestHandler,
+  userController.updateUser as RequestHandler
+);
+router.get(
+  "/:user",
+  allowSelfOnly as RequestHandler,
+  userController.getProfile as RequestHandler
+);
 router.delete(
   "/delete/:user",
+  allowSelfOnly as RequestHandler,
   userController.deleteUser as RequestHandler
 );
 

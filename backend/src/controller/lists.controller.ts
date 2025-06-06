@@ -36,7 +36,15 @@ export class ListController implements IListController {
 
   getAll: ExpressHandler = catchAsync(async (req, res, next) => {
     const user = res.locals.user;
-    const lists = await this.listService.getAll({ userID: user });
+    const limit = req.query.limit || 10;
+    const page = req.query.page || 1;
+    const offset = req.query.offset || 0;
+    const pageData = {
+      limit: Number(limit),
+      page: Number(page),
+      offset: Number(offset),
+    };
+    const lists = await this.listService.getAll({ userID: user }, pageData);
     return res.status(200).json({ lists, status: "success" });
   });
 

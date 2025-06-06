@@ -1,5 +1,6 @@
 import List from "../models/lists.model";
-import { IList, IListRepository } from "../interface/lists.interface";
+import { IList, IListRepository, IPage } from "../interface/lists.interface";
+import ErrorHandler from "../utils/errorHandler";
 
 export class ListRepository implements IListRepository {
   async create(data: Partial<IList>) {
@@ -18,11 +19,12 @@ export class ListRepository implements IListRepository {
     };
   }
 
-  async findAllByUser(listData: Partial<IList>) {
-    const lists = await List.find({ userID: listData.userID }).lean();
-    if (!lists) {
-      throw new Error("Lists not found");
-    }
+  async findAllByUser(listData: Partial<IList>, pageData: IPage) {
+    const offset = (pageData.page - 1) * pageData.limit;
+    const lists = await List.find({ userID: listData.userID })
+      .limit(pageData.limit)
+      .skip(offset)
+      .lean();
     return lists.map((list: any) => ({
       title: list.title,
       description: list.description,
@@ -33,13 +35,31 @@ export class ListRepository implements IListRepository {
     }));
   }
 
+  async findByTitle(listData: Partial<IList>) {
+    const list = await List.findOne({
+      userID: listData.userID,
+      title: listData.title,
+    }).lean();
+    if (!list) {
+      throw new ErrorHandler("List not found", 404);
+    }
+    return {
+      title: list.title,
+      description: list.description,
+      comments: list.comments,
+      status: list.status,
+      createdAt: list.createdAt,
+      userID: list.userID?.toString?.() ?? list.userID,
+    };
+  }
+
   async updateList(updateData: Partial<IList>) {
     const list = await List.findOne({
       title: updateData.title,
       userID: updateData.userID,
     });
     if (!list) {
-      throw new Error("List not found");
+      throw new ErrorHandler("cannot update, list not found", 404);
     }
     if (updateData.description) {
       list.description = updateData.description;
@@ -64,7 +84,7 @@ export class ListRepository implements IListRepository {
       title: deleteData.title,
     });
     if (!list) {
-      throw new Error("List not found");
+      throw new ErrorHandler("Cannot delete, list not found", 404);
     }
     await list.deleteOne();
     return {

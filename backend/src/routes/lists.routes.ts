@@ -12,8 +12,6 @@ const listRepo = new ListRepository();
 const listService = new ListService(listRepo, userRepo);
 const listController = new ListController(listService);
 
-router.use(protect as RequestHandler);
-
 router.post("/", listController.create as RequestHandler);
 router.get("/:title", listController.getByTitle as RequestHandler);
 router.get("/", listController.getAll as RequestHandler);

@@ -29,6 +29,8 @@ export const protect: ExpressHandler = (req, res, next) => {
 export const allowSelfOnly: ExpressHandler = (req, res, next) => {
   const userID = res.locals.user;
   const userName = req.params.user;
+  console.log("User ID(locals):", userID);
+  console.log("User Name(params):", userName);
   if (userID !== userName) {
     return res
       .status(403)

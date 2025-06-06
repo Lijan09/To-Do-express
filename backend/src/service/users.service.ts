@@ -5,6 +5,7 @@ import {
   IUserRepository,
 } from "../interface/users.interface";
 import { PasswordUtils } from "../utils/auth/auth";
+import ErrorHandler from "../utils/errorHandler";
 
 const passwordUtils = new PasswordUtils();
 
@@ -17,7 +18,7 @@ export class UserService implements IUserService {
 
   async registerUser(userData: IUser) {
     const user = await this.userRepo.createUser(userData);
-    if (!user) throw new Error("User registration failed");
+    if (!user) throw new ErrorHandler("User registration failed", 404);
     return {
       name: user.name,
       userName: user.userName,
@@ -30,7 +31,7 @@ export class UserService implements IUserService {
       { userName: authData.userName },
       "userName"
     )) as IUser | null;
-    if (!user) throw new Error("User not found");
+    if (!user) throw new ErrorHandler("User not found", 404);
     const hashedPassword = (await this.userRepo.getUserData(
       { userName: authData.userName },
       "password"
@@ -40,7 +41,7 @@ export class UserService implements IUserService {
       hashedPassword
     );
 
-    if (!isValid) throw new Error("Invalid password");
+    if (!isValid) throw new ErrorHandler("Invalid password", 401);
 
     return {
       userName: user.userName,
@@ -59,7 +60,7 @@ export class UserService implements IUserService {
     );
     if (!isValid) throw new Error("Invalid password");
     const user = await this.userRepo.updateUser(updateData);
-    if (!user) throw new Error("User update failed");
+    if (!user) throw new ErrorHandler("User update failed", 404);
     return {
       userName: user.userName,
       name: user.name,
@@ -73,7 +74,7 @@ export class UserService implements IUserService {
       "userName"
     )) as IUser | null;
 
-    if (!user) throw new Error("User not found");
+    if (!user) throw new ErrorHandler("User not found", 404);
 
     return {
       name: user.name,

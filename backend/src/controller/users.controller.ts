@@ -79,10 +79,11 @@ export class UserController implements IUserController {
 
   deleteUser: ExpressHandler = catchAsync(async (req, res, next) => {
     const userName = req.params.user;
+    console.log("Deleting user:", userName);
     const userData = await this.userService.deleteUsers({ userName });
     return res.status(200).json({
       status: "success",
-      data: `User ${userName} deleted successfully`,
+      data: `User ${userData?.userName} deleted successfully`,
     });
   });
 }

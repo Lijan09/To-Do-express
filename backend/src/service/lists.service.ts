@@ -2,8 +2,10 @@ import {
   IList,
   IListRepository,
   IListService,
+  IPage,
 } from "../interface/lists.interface";
 import { IUserRepository } from "../interface/users.interface";
+import ErrorHandler from "../utils/errorHandler";
 
 export class ListService implements IListService {
   private listRepo: IListRepository;
@@ -40,23 +42,17 @@ export class ListService implements IListService {
       "id"
     );
     listData.userID = userID as string;
-    const lists = await this.listRepo.findAllByUser(listData);
-    const list = lists.find(
-      (list) => list.title.toLowerCase() === listData.title!.toLowerCase()
-    );
-    if (!list) {
-      throw new Error("No List matching Title");
-    }
+    const list = await this.listRepo.findByTitle(listData);
     return list;
   }
 
-  async getAll(listData: Partial<IList>) {
+  async getAll(listData: Partial<IList>, pageData: IPage) {
     const userID = await this.userRepo.getUserData(
       { userName: listData.userID },
       "id"
     );
     listData.userID = userID as string;
-    return this.listRepo.findAllByUser(listData);
+    return this.listRepo.findAllByUser(listData, pageData);
   }
 
   async updateList(updateData: IList) {

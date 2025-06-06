@@ -1,5 +1,6 @@
 import User, { IUserSchema } from "../models/users.model";
 import { IUser, IUpdate, IUserRepository } from "../interface/users.interface";
+import ErrorHandler from "../utils/errorHandler";
 
 export class UserRepository implements IUserRepository {
   async createUser(userData: IUser) {
@@ -9,6 +10,7 @@ export class UserRepository implements IUserRepository {
       password: userData.password,
     });
     await user.save();
+    
     return {
       name: userData.name,
       userName: userData.userName,
@@ -20,7 +22,7 @@ export class UserRepository implements IUserRepository {
       "+password +_id"
     );
     if (!user) {
-      throw new Error("User not found");
+      throw new ErrorHandler("User not found", 404);
     }
     type = type.toLowerCase();
     if (type === "password") {
@@ -39,7 +41,7 @@ export class UserRepository implements IUserRepository {
       "+password"
     );
     if (!user) {
-      throw new Error("User not found");
+      throw new ErrorHandler("Cannot update, User not found", 404);
     }
     if (updateData.password) {
       user.password = updateData.password;
@@ -59,7 +61,7 @@ export class UserRepository implements IUserRepository {
       userName: userName.userName,
     });
     if (!user) {
-      throw new Error("User not found");
+      throw new ErrorHandler("Cannot delete, User not found", 404);
     }
     await user.deleteOne();
     return {
