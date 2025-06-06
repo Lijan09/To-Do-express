@@ -12,6 +12,7 @@ export class ListController implements IListController {
   create: ExpressHandler = catchAsync(async (req, res, next) => {
     const bodyData = req.body;
     const user = res.locals.user;
+    console.log("User ID:", user);
     const listData = await this.listService.create({
       title: bodyData.title,
       description: bodyData.description,
@@ -50,9 +51,10 @@ export class ListController implements IListController {
 
   updateList: ExpressHandler = catchAsync(async (req, res, next) => {
     const bodyData = req.body;
+    const title = req.params.title;
     const user = res.locals.user;
     const updatedList = await this.listService.updateList({
-      title: bodyData.title,
+      title: title,
       description: bodyData.description,
       comments: bodyData.comments,
       status: bodyData.status,
@@ -65,8 +67,14 @@ export class ListController implements IListController {
   });
 
   delete: ExpressHandler = catchAsync(async (req, res, next) => {
-    const { title } = req.body;
-    const message = await this.listService.delete(title);
-    return res.status(200).json({ message });
+    const title = req.params.title;
+    const user = res.locals.user;
+    const message = await this.listService.delete({
+      title: title,
+      userID: user,
+    });
+    return res
+      .status(200)
+      .json({ message: message, status: `Successfully deleted ${title}` });
   });
 }

@@ -21,6 +21,7 @@ export class ListService implements IListService {
       { userName: data.userID },
       "id"
     );
+    console.log("User ID:", userID);
     const response = await this.listRepo.create({
       title: data.title,
       userID: userID as string,
@@ -66,6 +67,11 @@ export class ListService implements IListService {
   }
 
   async delete(deleteData: Partial<IList>) {
+    const userID = await this.userRepo.getUserData(
+      { userName: deleteData.userID },
+      "id"
+    );
+    deleteData.userID = userID as string;
     return this.listRepo.delete(deleteData);
   }
 }

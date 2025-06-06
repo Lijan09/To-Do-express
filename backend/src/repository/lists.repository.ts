@@ -1,6 +1,7 @@
 import List from "../models/lists.model";
 import { IList, IListRepository, IPage } from "../interface/lists.interface";
 import ErrorHandler from "../utils/errorHandler";
+import { Types } from "mongoose";
 
 export class ListRepository implements IListRepository {
   async create(data: Partial<IList>) {
@@ -10,6 +11,7 @@ export class ListRepository implements IListRepository {
       description: data.description,
       comments: data.comments,
     });
+    console.log("Creating new list with data:", newList);
     await newList.save();
     return {
       title: newList.title,
@@ -20,10 +22,10 @@ export class ListRepository implements IListRepository {
   }
 
   async findAllByUser(listData: Partial<IList>, pageData: IPage) {
-    const offset = (pageData.page - 1) * pageData.limit;
+    const startIndex = (pageData.page - 1) * pageData.limit;
     const lists = await List.find({ userID: listData.userID })
       .limit(pageData.limit)
-      .skip(offset)
+      .skip(startIndex)
       .lean();
     return lists.map((list: any) => ({
       title: list.title,
@@ -82,6 +84,7 @@ export class ListRepository implements IListRepository {
   async delete(deleteData: Partial<IList>) {
     const list = await List.findOne({
       title: deleteData.title,
+      userID: deleteData.userID,
     });
     if (!list) {
       throw new ErrorHandler("Cannot delete, list not found", 404);

@@ -39,7 +39,7 @@ const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
   },
 });
 
-listSchema.index({ user: 1, title: 1 }, { unique: true });
+listSchema.index({ userID: 1, title: 1 }, { unique: true });
 
 const List = mongoose.model<IListSchema>("List", listSchema);
 
