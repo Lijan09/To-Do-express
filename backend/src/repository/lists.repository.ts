@@ -1,6 +1,5 @@
 import List from "../models/lists.model";
 import { IList, IListRepository } from "../interface/lists.interface";
-import ErrorHandler from "../utils/errorHandler";
 
 export class ListRepository implements IListRepository {
   async create(data: Partial<IList>) {
@@ -21,6 +20,9 @@ export class ListRepository implements IListRepository {
 
   async findAllByUser(listData: Partial<IList>) {
     const lists = await List.find({ userID: listData.userID }).lean();
+    if (!lists) {
+      throw new Error("Lists not found");
+    }
     return lists.map((list: any) => ({
       title: list.title,
       description: list.description,
@@ -32,14 +34,13 @@ export class ListRepository implements IListRepository {
   }
 
   async updateList(updateData: Partial<IList>) {
-    let list = await List.findOne({
+    const list = await List.findOne({
       title: updateData.title,
       userID: updateData.userID,
     });
     if (!list) {
-      throw new ErrorHandler("List not found", 404);
+      throw new Error("List not found");
     }
-    list = list!;
     if (updateData.description) {
       list.description = updateData.description;
     }
@@ -63,11 +64,11 @@ export class ListRepository implements IListRepository {
       title: deleteData.title,
     });
     if (!list) {
-      throw new ErrorHandler("List not found", 404);
+      throw new Error("List not found");
     }
-    await list!.deleteOne();
+    await list.deleteOne();
     return {
-      title: list!.title,
+      title: list.title,
     };
   }
 }

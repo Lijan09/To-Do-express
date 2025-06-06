@@ -1,6 +1,5 @@
 import User, { IUserSchema } from "../models/users.model";
 import { IUser, IUpdate, IUserRepository } from "../interface/users.interface";
-import ErrorHandler from "../utils/errorHandler";
 
 export class UserRepository implements IUserRepository {
   async createUser(userData: IUser) {
@@ -21,17 +20,17 @@ export class UserRepository implements IUserRepository {
       "+password +_id"
     );
     if (!user) {
-      throw new ErrorHandler("User not found", 404);
+      throw new Error("User not found");
     }
     type = type.toLowerCase();
     if (type === "password") {
-      return user!.password;
+      return user.password;
     } else if (type === "id") {
-      return user!._id as string;
+      return user._id as string;
     }
     return {
-      userName: user!.userName,
-      name: user!.name,
+      userName: user.userName,
+      name: user.name,
     };
   }
 
@@ -40,18 +39,18 @@ export class UserRepository implements IUserRepository {
       "+password"
     );
     if (!user) {
-      throw new ErrorHandler("User not found", 404);
+      throw new Error("User not found");
     }
     if (updateData.password) {
-      user!.password = updateData.password;
+      user.password = updateData.password;
     }
     if (updateData.name) {
-      user!.name = updateData.name;
+      user.name = updateData.name;
     }
-    await user!.save();
+    await user.save();
     return {
-      userName: user!.userName,
-      name: user!.name,
+      userName: user.userName,
+      name: user.name,
     };
   }
 
@@ -60,11 +59,11 @@ export class UserRepository implements IUserRepository {
       userName: userName.userName,
     });
     if (!user) {
-      throw new ErrorHandler("User not found", 404);
+      throw new Error("User not found");
     }
-    await user!.deleteOne();
+    await user.deleteOne();
     return {
-      userName: user!.userName,
+      userName: user.userName,
     };
   }
 }

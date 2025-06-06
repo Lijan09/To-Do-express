@@ -19,8 +19,11 @@ router.post("/logout", userController.logout as RequestHandler);
 
 router.use(allowSelfOnly as RequestHandler);
 
-router.put("/update/", userController.updateUser as RequestHandler);
-router.get("/", userController.getProfile as RequestHandler);
-router.delete("/delete", userController.deleteUser as RequestHandler);
+router.put("/update/:user", userController.updateUser as RequestHandler);
+router.get("/:user", userController.getProfile as RequestHandler);
+router.delete(
+  "/delete/:user",
+  userController.deleteUser as RequestHandler
+);
 
 export default router;
