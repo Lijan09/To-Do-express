@@ -17,6 +17,7 @@ export class UserController implements IUserController {
   }
 
   register: ExpressHandler = catchAsync(async (req, res, next) => {
+    console.log("Registering user...");
     const bodyData = req.body;
     const userData = await this.userService.registerUser({
       name: bodyData.name,

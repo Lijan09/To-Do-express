@@ -4,6 +4,7 @@ import {
   IListService,
 } from "../interface/lists.interface";
 import { IUserRepository } from "../interface/users.interface";
+import ErrorHandler from "../utils/errorHandler";
 
 export class ListService implements IListService {
   private listRepo: IListRepository;
@@ -45,9 +46,9 @@ export class ListService implements IListService {
       (list) => list.title.toLowerCase() === listData.title!.toLowerCase()
     );
     if (!list) {
-      throw new Error("No List matching Title");
+      throw new ErrorHandler("List not found", 404);
     }
-    return list;
+    return list!;
   }
 
   async getAll(listData: Partial<IList>) {

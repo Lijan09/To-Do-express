@@ -5,6 +5,7 @@ import {
   IUserRepository,
 } from "../interface/users.interface";
 import { PasswordUtils } from "../utils/auth/auth";
+import ErrorHandler from "../utils/errorHandler";
 
 const passwordUtils = new PasswordUtils();
 
@@ -16,8 +17,11 @@ export class UserService implements IUserService {
   }
 
   async registerUser(userData: IUser) {
+    console.log("User Data: ", userData);
     const user = await this.userRepo.createUser(userData);
-    if (!user) throw new Error("User registration failed");
+    if (!user) {
+      const err = new ErrorHandler("User Registration failed!", 404);
+    }
     return {
       name: user.name,
       userName: user.userName,
@@ -30,7 +34,6 @@ export class UserService implements IUserService {
       { userName: authData.userName },
       "userName"
     )) as IUser | null;
-    if (!user) throw new Error("User not found");
     const hashedPassword = (await this.userRepo.getUserData(
       { userName: authData.userName },
       "password"
@@ -40,10 +43,10 @@ export class UserService implements IUserService {
       hashedPassword
     );
 
-    if (!isValid) throw new Error("Invalid password");
+    if (!isValid) throw new ErrorHandler("Invalid Password!", 403);
 
     return {
-      userName: user.userName,
+      userName: user!.userName,
       message: "Login successful",
     };
   }
@@ -57,9 +60,8 @@ export class UserService implements IUserService {
       updateData.confirmPassword,
       hashedPassword
     );
-    if (!isValid) throw new Error("Invalid password");
+    if (!isValid) throw new ErrorHandler("Invalid Password!", 403);
     const user = await this.userRepo.updateUser(updateData);
-    if (!user) throw new Error("User update failed");
     return {
       userName: user.userName,
       name: user.name,
@@ -73,11 +75,9 @@ export class UserService implements IUserService {
       "userName"
     )) as IUser | null;
 
-    if (!user) throw new Error("User not found");
-
     return {
-      name: user.name,
-      userName: user.userName,
+      name: user!.name,
+      userName: user!.userName,
     };
   }
 

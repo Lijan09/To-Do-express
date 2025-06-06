@@ -4,6 +4,7 @@ import { dbConnect } from "./src/config/db";
 import userRoutes from "./src/routes/users.routes";
 import listRoutes from "./src/routes/lists.routes";
 import config from "./src/config/config";
+import { errorHandler } from "./src/middleware/error.middleware";
 
 dotenv.config();
 
@@ -17,12 +18,15 @@ app.use(express.json());
 
 // Routes
 app.use("/api/user", userRoutes);
-app.use("/api/list", listRoutes); // routes like /api/user/lists etc.
+app.use("/api/list", listRoutes);
 
 // Check
 app.get("/", (_, res) => {
   res.send("Server is running");
 });
+
+//errror handling middleware
+// app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
