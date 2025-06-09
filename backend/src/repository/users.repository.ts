@@ -10,7 +10,7 @@ export class UserRepository implements IUserRepository {
       password: userData.password,
     });
     await user.save();
-    
+
     return {
       name: userData.name,
       userName: userData.userName,
@@ -18,8 +18,21 @@ export class UserRepository implements IUserRepository {
   }
 
   async getUserData(username: Partial<IUser>, type: string) {
+    if (type.toLowerCase() === "token") {
+      const user = await User.findOne({
+        resetToken: username.resetToken,
+      }).select("+resetToken +tokenExpiry");
+      if (!user) {
+        throw new ErrorHandler("Invalid Token", 404);
+      }
+      if (user.tokenExpiry && user.tokenExpiry < new Date()) {
+        throw new ErrorHandler("Token has expired", 400);
+      }
+      return user.resetToken || "";
+    }
+
     const user = await User.findOne({ userName: username.userName }).select(
-      "+password +_id"
+      "+password +_id +resetToken"
     );
     if (!user) {
       throw new ErrorHandler("User not found", 404);
@@ -36,7 +49,30 @@ export class UserRepository implements IUserRepository {
     };
   }
 
-  async updateUser(updateData: IUpdate) {
+  async resetPassword(resetData: Partial<IUser>) {
+    const user = await User.findOne({
+      resetToken: resetData.resetToken,
+    }).select("+resetToken +tokenExpiry");
+    if (!user) {
+      throw new ErrorHandler("Invalid reset token", 400);
+    }
+    if (resetData.password) {
+      user.password = resetData.password as string;
+    } else {
+      throw new ErrorHandler("Password is required", 400);
+    }
+    user.resetToken = undefined;
+    user.tokenExpiry = undefined;
+    await user.save();
+    return {
+      userName: user.userName,
+      message: "Password reset successfully",
+    };
+  }
+
+  async forgotPassword() {}
+
+  async updateUser(updateData: Partial<IUpdate>) {
     const user = await User.findOne({ userName: updateData.userName }).select(
       "+password"
     );
@@ -48,6 +84,14 @@ export class UserRepository implements IUserRepository {
     }
     if (updateData.name) {
       user.name = updateData.name;
+    }
+    if (updateData.resetToken) {
+      user.resetToken = updateData.resetToken;
+      user.tokenExpiry = updateData.tokenExpiry;
+      user.save();
+      return {
+        userName: user.userName,
+      };
     }
     await user.save();
     return {
