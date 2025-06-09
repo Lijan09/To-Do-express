@@ -70,7 +70,10 @@ export class UserRepository implements IUserRepository {
     };
   }
 
-  async forgotPassword() {}
+  async getUserByID(id: string) {
+    const user = await User.findOne({ _id: id });
+    return user!;
+  }
 
   async updateUser(updateData: Partial<IUpdate>) {
     const user = await User.findOne({ userName: updateData.userName }).select(

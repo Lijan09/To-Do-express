@@ -1,7 +1,6 @@
 import List from "../models/lists.model";
 import { IList, IListRepository, IPage } from "../interface/lists.interface";
 import ErrorHandler from "../utils/errorHandler";
-import { Types } from "mongoose";
 
 export class ListRepository implements IListRepository {
   async create(data: Partial<IList>) {
@@ -53,6 +52,21 @@ export class ListRepository implements IListRepository {
       createdAt: list.createdAt,
       userID: list.userID?.toString?.() ?? list.userID,
     };
+  }
+
+  async findUpcomingTasks(now: Date, upcoming: Date) {
+    const lists = await List.find({
+      deadline: { $gte: now, $lte: upcoming },
+    }).lean();
+    return lists.map((list: any) => ({
+      title: list.title,
+      description: list.description,
+      comments: list.comments,
+      status: list.status,
+      createdAt: list.createdAt,
+      userID: list.userID?.toString?.() ?? list.userID,
+      deadline: list.deadline,
+    }));
   }
 
   async updateList(updateData: Partial<IList>) {

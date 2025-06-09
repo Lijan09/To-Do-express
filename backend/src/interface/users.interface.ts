@@ -43,6 +43,7 @@ export interface IUserRepository {
     userName: Partial<IUser>,
     type: string
   ): Promise<string | Partial<IUser>>;
+  getUserByID(id: string): Promise<Partial<IUser>>;
   resetPassword(resetData: Partial<IUser>): Promise<Partial<IUser>>;
   updateUser(updateData: Partial<IUpdate>): Promise<Partial<IUser>>;
   deleteUser(userName: Partial<IUser>): Promise<Partial<IUser> | null>;
