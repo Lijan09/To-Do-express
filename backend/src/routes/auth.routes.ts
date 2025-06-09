@@ -11,5 +11,13 @@ const userController = new UserController(userService);
 
 router.post("/register", userController.register as RequestHandler);
 router.post("/login", userController.login as RequestHandler);
+router.post(
+  "/forgot-password",
+  userController.forgotPassword as RequestHandler
+);
+router.post(
+  "/reset-password/:token",
+  userController.resetPassword as RequestHandler
+);
 
 export default router;

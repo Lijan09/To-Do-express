@@ -21,6 +21,7 @@ export interface IListRepository {
     pageData: IPage
   ): Promise<IList[] | []>;
   findByTitle(listData: Partial<IList>): Promise<IList>;
+  findUpcomingTasks(now: Date, upcoming: Date): Promise<IList[] | []>;
   updateList(updateData: IList): Promise<Partial<IList>>;
   delete(deleteData: Partial<IList>): Promise<Partial<IList>>;
 }

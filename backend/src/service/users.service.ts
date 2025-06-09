@@ -68,6 +68,40 @@ export class UserService implements IUserService {
     };
   }
 
+  async resetPassword(resetData: Partial<IUser>) {
+    resetData.resetToken = passwordUtils.hashResetToken(
+      resetData.resetToken as string
+    );
+    await this.userRepo.getUserData(
+      { resetToken: resetData.resetToken },
+      "token"
+    );
+    const user = await this.userRepo.resetPassword(resetData);
+    if (!user) throw new ErrorHandler("Password reset failed", 500);
+    return user;
+  }
+
+  async forgotPassword(resetData: Partial<IUser>) {
+    const user = (await this.userRepo.getUserData(
+      { userName: resetData.userName },
+      "userName"
+    )) as Partial<IUser> | null;
+    if (!user) throw new ErrorHandler("User not found", 404);
+
+    const resetToken = await passwordUtils.generateResetToken();
+    const resetTokenHash = await passwordUtils.hashResetToken(resetToken);
+    const token = await this.userRepo.updateUser({
+      userName: user.userName,
+      resetToken: resetTokenHash,
+      tokenExpiry: new Date(Date.now() + 3600000), // 1 hour expiry
+    });
+    return {
+      userName: token.userName,
+      resetToken,
+      message: "Reset token generated successfully",
+    };
+  }
+
   async getProfile(userData: IUser) {
     const user = (await this.userRepo.getUserData(
       { userName: userData.userName },

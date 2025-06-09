@@ -68,6 +68,32 @@ export class UserController implements IUserController {
     });
   });
 
+  resetPassword: ExpressHandler = catchAsync(async (req, res, next) => {
+    const password = req.body.password;
+    const token = req.params.token;
+    const userData = await this.userService.resetPassword({
+      password,
+      resetToken: token,
+    });
+    return res.status(200).json({
+      status: "success",
+      message: "Password reset successfully",
+      data: { userData },
+    });
+  });
+
+  forgotPassword: ExpressHandler = catchAsync(async (req, res, next) => {
+    const { userName } = req.body;
+    const resetLink = await this.userService.forgotPassword({
+      userName: userName,
+    });
+    return res.status(200).json({
+      status: "success",
+      message: "Password reset link sent successfully",
+      data: { resetLink }, //will be sent in email in real application
+    });
+  });
+
   getProfile: ExpressHandler = catchAsync(async (req, res, next) => {
     const userName = req.params.user;
     const userData = await this.userService.getProfile({ userName });

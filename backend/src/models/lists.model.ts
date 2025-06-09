@@ -7,6 +7,7 @@ export interface IListSchema extends Document {
   status: "active" | "doing" | "completed";
   createdAt: Date;
   userID: mongoose.Types.ObjectId;
+  deadline?: Date;
 }
 
 const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
@@ -36,6 +37,10 @@ const listSchema: Schema<IListSchema> = new Schema<IListSchema>({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
+  },
+  deadline: {
+    type: Date,
+    required: false,
   },
 });
 
