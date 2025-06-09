@@ -48,7 +48,7 @@ JWT_SECRET=<your_jwt_secret>
 4. Start the server
 
 ```bash
-npm run dev
+npm start
 ```
 
 5. Access API at `http://localhost:5000/`
